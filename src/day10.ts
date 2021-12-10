@@ -1,80 +1,88 @@
-fn main() {
-    // let input = _get_test_input();
-    let input = _get_input();
-
-    // ----------- Parse Input -----------
-
-    let lines = input
-        .trim()
-        .split('\n')
-        .map(|s| s.trim())
-        .collect::<Vec<&str>>();
-
-    // ----------- Solve -----------
-
-    let get_closing = |c: char| match c {
-        '{' => '}',
-        '(' => ')',
-        '[' => ']',
-        '<' => '>',
-        _ => ' ',
-    };
-
-    let get_value_p1 = |c: char| match c {
-        ')' => 3,
-        ']' => 57,
-        '}' => 1197,
-        '>' => 25137,
-        _ => 0,
-    };
-
-    let get_value_p2 = |c: char| match c {
-        ')' => 1,
-        ']' => 2,
-        '}' => 3,
-        '>' => 4,
-        _ => 0,
-    };
-
-    let mut p1 = 0;
-    let mut p2_scores = vec!();
-    for line in lines {
-        let mut stack = vec![];
-        let mut found_err = false;
-        for c in line.chars() {
-            if get_closing(c) != ' ' {
-                stack.push(c);
-            } else {
-                let top = stack.pop();
-                if top.is_some() && c != get_closing(top.unwrap()) {
-                    p1 += get_value_p1(c);
-                    found_err = true;
-                    break;
-                }
-            }
-        }
-        if !found_err {
-            let mut p2_score: i64 = 0;
-            for c in stack.iter().rev().map(|c| get_closing(*c)) {
-                p2_score = 5 * p2_score + get_value_p2(c);
-            }
-            p2_scores.push(p2_score);
-        }
-    }
-
-    p2_scores.sort();
-    let p2 = p2_scores[p2_scores.len() / 2];
 
 
-    // ----------- Print -----------
+const input = getTestInput().trim().split('\n').map((s) => s.trim().split(''))
 
-    println!("Part 1: {:?}", p1);
-    println!("Part 2: {:?}", p2);
+// console.log(input)
+
+const parMap = {
+    '[': ']',
+    '{': '}',
+    '(': ')',
+    '<': '>',
 }
 
-fn _get_test_input() -> String {
-    return "
+const parValues = {
+    ']': 57,
+    '}': 1197,
+    ')': 3,
+    '>': 25137,
+}
 
+let p1 = 0;
+const filtered = [];
+input.forEach((line) => {
+    let stack = [];
+    let foundError = false;
+    for (let c of line) {
+        if (Object.keys(parMap).includes(c)) {
+            stack.push(c)
+        } else {
+            const top = stack.pop();
+            if (parMap[top] != c) {
+                p1 += parValues[c]
+                foundError = true;
+                break;
+            }
+        }
+    }
+    if (!foundError) {
+        filtered.push(line)
+    }
+})
+
+console.log(p1)
+
+
+const parValuesP2 = {
+    ')': 1,
+    ']': 2,
+    '}': 3,
+    '>': 4,
+}
+
+const scores = filtered.map((line) => {
+    let stack = [];
+    for (let c of line) {
+        if (Object.keys(parMap).includes(c)) {
+            stack.push(c)
+        } else {
+            stack.pop();
+        }
+    }
+    const closing = stack.map((c) => parMap[c]).reverse();
+    const score = closing.reduce((acc, c) => 5 * acc + parValuesP2[c], 0)
+    return score;
+});
+scores.sort((a, b) => a - b);
+console.log(scores)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function getTestInput() {
+
+    return `
     [({(<(())[]>[[{[]{<()<>>
         [(()[<>])]({[<{<<[]>>(
         {([(<{}[<>[]}>{[]{[(<()>
@@ -85,14 +93,14 @@ fn _get_test_input() -> String {
         [<(<(<(<{}))><([]([]()
         <{([([[(<>()){}]>(<<{{
         <{([{{}}[<[[[<>{}]]]>[]] 
+    
+    
+    `;
 
-"
-    .to_string();
 }
 
-fn _get_input() -> String {
-    return "
-
+function getInput() {
+    return `
     [{[[{(((<[{{((()<>)(<><>))[{{}{}}((){})]}[<<()[]>[{}()]>[{<>{}}<()()>]]}{{[[{}<>]({}{})]<[{}
         <[({(([<[[<([[(){}]<()()>])>[[(({})[<>()])]]]<[(({()[]})[{<>{}>(<>{})])<({<>()}[<>{}])(({}<>){()<>
         ([{[([(((<<<{({}())<()[]>}<[[]()]{<>{}})>[{[[][]]{<><>}}]>>)[[[{{({}<>)([]<>)}}({(()[])<()[]>})](<[[()()]<{}
@@ -187,7 +195,7 @@ fn _get_input() -> String {
         [{<({{(([([[<<()()><<><>>>[<()[]>([]<>)]]{[{()<>}]((()[]){{}{}})}])[({[([]<>)][[<>[]]<{}{}>]}{[[[]
         (<{(([{{<[([[<()<>>(<>)]<([])[(){}]>]){{[<[]<>>{{}{}}]}({[{}]}[{()[]}{{}<>}])}]>{<<{{<(){}>({}{}
         ({{(<{{[[<{<[{{}{}}{<>[]}][(<>{}>(()<>)]>}[{<{{}<>}><{()<>}<[]()>>}]>({[{{{}{}}<{}{}>}(((){})[[]<>])]({<[][]> 
+    
+    `;
 
-"
-    .to_string();
 }
