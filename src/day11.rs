@@ -3,8 +3,8 @@ use utils::Grid;
 use std::collections::HashSet;
 
 fn main() {
-    let input = _get_test_input();
-    // let input = _get_input();
+    // let input = _get_test_input();
+    let input = _get_input();
 
     // ----------- Parse Input -----------
 
@@ -18,6 +18,7 @@ fn main() {
 
     // ----------- Solve -----------
 
+    // println!("{}: {:?}", 0, grid);
     let mut p1 = 0;
     let mut p2 = 0;
     for step in 0..1000 {
