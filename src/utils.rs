@@ -1,5 +1,61 @@
-use std::fmt;
+use std::collections::HashMap;
 use std::collections::HashSet;
+use std::fmt;
+use std::hash::Hash;
+
+pub struct Graph<T>
+where
+    T: Eq + Hash + Copy,
+{
+    edges: HashMap<T, HashSet<T>>,
+}
+
+impl<T> Graph<T>
+where
+    T: Eq + Hash + Copy,
+{
+    pub fn new() -> Graph<T> {
+        Graph {
+            edges: HashMap::new(),
+        }
+    }
+
+    pub fn add_node(&mut self, key: T) {
+        self.edges.insert(key, HashSet::new());
+    }
+
+    pub fn add_edge(&mut self, a: T, b: T) {
+        let edges_a = self.edges.entry(a).or_insert(HashSet::new());
+        edges_a.insert(b);
+
+        let edges_b = self.edges.entry(b).or_insert(HashSet::new());
+        edges_b.insert(a);
+    }
+
+    pub fn neighbors(&self, key: &T) -> HashSet<T> {
+        if !self.edges.contains_key(key) {
+            return HashSet::new();
+        }
+        return self.edges.get(key).unwrap().to_owned();
+    }
+}
+
+impl<T> fmt::Debug for Graph<T>
+where
+    T: Eq + Hash + Copy + fmt::Debug + Ord,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut sorted_keys = Vec::from_iter(self.edges.keys().map(|k| *k));
+        sorted_keys.sort();
+        for key in sorted_keys {
+            let mut sorted_edges =
+                Vec::from_iter(self.edges.get(&key).unwrap().into_iter().map(|t| *t));
+            sorted_edges.sort();
+            write!(f, "\n\x1b[31m{:?}\x1b[0m -> {:?}", key, sorted_edges).unwrap();
+        }
+        Ok(())
+    }
+}
 
 pub struct Grid<T> {
     grid: Vec<Vec<T>>,
@@ -60,12 +116,24 @@ impl<T> Grid<T> {
         GridIter { grid: self, pos: 0 }
     }
 
-    pub fn bfs_iter(&self, pos: (usize, usize), validator: fn((usize, usize), &T) -> bool) -> GridBfsIter<'_, T> {
-        GridBfsIter { grid: self, to_visit: vec!(pos), seen: HashSet::new(), validator }
+    pub fn bfs_iter(
+        &self,
+        pos: (usize, usize),
+        validator: fn((usize, usize), &T) -> bool,
+    ) -> GridBfsIter<'_, T> {
+        GridBfsIter {
+            grid: self,
+            to_visit: vec![pos],
+            seen: HashSet::new(),
+            validator,
+        }
     }
 }
 
-impl<T> fmt::Debug for Grid<T> where T: fmt::Debug, {
+impl<T> fmt::Debug for Grid<T>
+where
+    T: fmt::Debug,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for row in &self.grid {
             write!(f, "\n{:?}", row).unwrap();
@@ -98,7 +166,10 @@ pub struct GridBfsIter<'a, T> {
     seen: HashSet<(usize, usize)>,
 }
 
-impl<'a, T> Iterator for GridBfsIter<'a, T> where T: fmt::Debug, {
+impl<'a, T> Iterator for GridBfsIter<'a, T>
+where
+    T: fmt::Debug,
+{
     type Item = ((usize, usize), &'a T);
     fn next(&mut self) -> Option<Self::Item> {
         if self.to_visit.is_empty() {
