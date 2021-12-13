@@ -61,6 +61,24 @@ pub struct Grid<T> {
     grid: Vec<Vec<T>>,
 }
 
+impl<T> Grid<T> where T: Copy {
+    pub fn from_points(points: Vec<((usize, usize), T)>, default: T) -> Grid<T> {
+        let mut max_x = 0;
+        let mut max_y = 0;
+        for (point, _) in points.iter() {
+            max_x = usize::max(max_x, point.0);
+            max_y = usize::max(max_y, point.1);
+        }
+
+        let mut grid = Grid { grid: vec![vec![default; max_x + 1]; max_y + 1] };
+        for (point, val) in points.iter() {
+            grid.set(point.0, point.1, *val);
+        }
+
+        grid
+    }
+}
+
 impl<T> Grid<T> {
     pub fn new(grid: Vec<Vec<T>>) -> Grid<T> {
         Grid { grid }
@@ -136,7 +154,25 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for row in &self.grid {
-            write!(f, "\n{:?}", row).unwrap();
+            write!(f, "\n").unwrap();
+            for t in row {
+                write!(f, "{:?} ", t).unwrap();
+            }
+        }
+        Ok(())
+    }
+}
+
+impl<T> fmt::Display for Grid<T>
+where
+    T: fmt::Display,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for row in &self.grid {
+            write!(f, "\n").unwrap();
+            for t in row {
+                write!(f, "{}", t).unwrap();
+            }
         }
         Ok(())
     }
