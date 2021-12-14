@@ -61,7 +61,10 @@ pub struct Grid<T> {
     grid: Vec<Vec<T>>,
 }
 
-impl<T> Grid<T> where T: Copy {
+impl<T> Grid<T>
+where
+    T: Copy,
+{
     pub fn from_points(points: Vec<((usize, usize), T)>, default: T) -> Grid<T> {
         let mut max_x = 0;
         let mut max_y = 0;
@@ -70,7 +73,9 @@ impl<T> Grid<T> where T: Copy {
             max_y = usize::max(max_y, point.1);
         }
 
-        let mut grid = Grid { grid: vec![vec![default; max_x + 1]; max_y + 1] };
+        let mut grid = Grid {
+            grid: vec![vec![default; max_x + 1]; max_y + 1],
+        };
         for (point, val) in points.iter() {
             grid.set(point.0, point.1, *val);
         }
