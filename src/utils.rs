@@ -1,7 +1,45 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::collections::BinaryHeap;
+use std::ops::Add;
 use std::fmt;
 use std::hash::Hash;
+
+
+#[derive(Copy, Clone, Eq, PartialEq, Ord)]
+pub struct PqState<T> where T: Ord {
+    pub cost: T,
+    pub pos: (usize, usize),
+}
+
+impl<T> PartialOrd for PqState<T> where T: Ord {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(other.cost.cmp(&self.cost))
+    }
+}
+
+// Note: Does not include cost of the starting node
+pub fn get_shortest_path_grid<T: Add<Output = T>>(grid: &Grid<T>, start: (usize, usize), end: (usize, usize)) -> Option<T> where T: Default + Ord + Add + Copy {
+    let mut heap = BinaryHeap::new();
+    let mut seen = HashSet::new();
+    heap.push(PqState{ cost: T::default(), pos: start });
+    seen.insert(start);
+
+    while let Some(PqState { cost, pos }) = heap.pop() {
+        if pos == end {
+            return Some(cost);
+        }
+
+        for n in grid.neighbors(pos.0, pos.1) {
+            if !seen.contains(&n) {
+                seen.insert(n);
+                heap.push(PqState{ cost: cost + *grid.get(n.0, n.1), pos: n });
+            }
+        }
+    }
+
+    None
+}
 
 pub struct Graph<T>
 where
@@ -10,6 +48,7 @@ where
     edges: HashMap<T, HashSet<T>>,
 }
 
+#[allow(dead_code)]
 impl<T> Graph<T>
 where
     T: Eq + Hash + Copy,
@@ -84,6 +123,7 @@ where
     }
 }
 
+#[allow(dead_code)]
 impl<T> Grid<T> {
     pub fn new(grid: Vec<Vec<T>>) -> Grid<T> {
         Grid { grid }
