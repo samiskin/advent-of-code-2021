@@ -1,28 +1,43 @@
+use std::collections::BinaryHeap;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::collections::BinaryHeap;
-use std::ops::Add;
 use std::fmt;
 use std::hash::Hash;
-
+use std::ops::Add;
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord)]
-pub struct PqState<T> where T: Ord {
+pub struct PqState<T>
+where
+    T: Ord,
+{
     pub cost: T,
     pub pos: (usize, usize),
 }
 
-impl<T> PartialOrd for PqState<T> where T: Ord {
+impl<T> PartialOrd for PqState<T>
+where
+    T: Ord,
+{
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(other.cost.cmp(&self.cost))
     }
 }
 
 // Note: Does not include cost of the starting node
-pub fn get_shortest_path_grid<T: Add<Output = T>>(grid: &Grid<T>, start: (usize, usize), end: (usize, usize)) -> Option<T> where T: Default + Ord + Add + Copy {
+pub fn get_shortest_path_grid<T: Add<Output = T>>(
+    grid: &Grid<T>,
+    start: (usize, usize),
+    end: (usize, usize),
+) -> Option<T>
+where
+    T: Default + Ord + Add + Copy,
+{
     let mut heap = BinaryHeap::new();
     let mut seen = HashSet::new();
-    heap.push(PqState{ cost: T::default(), pos: start });
+    heap.push(PqState {
+        cost: T::default(),
+        pos: start,
+    });
     seen.insert(start);
 
     while let Some(PqState { cost, pos }) = heap.pop() {
@@ -33,7 +48,10 @@ pub fn get_shortest_path_grid<T: Add<Output = T>>(grid: &Grid<T>, start: (usize,
         for n in grid.neighbors(pos.0, pos.1) {
             if !seen.contains(&n) {
                 seen.insert(n);
-                heap.push(PqState{ cost: cost + *grid.get(n.0, n.1), pos: n });
+                heap.push(PqState {
+                    cost: cost + *grid.get(n.0, n.1),
+                    pos: n,
+                });
             }
         }
     }
@@ -95,6 +113,8 @@ where
         Ok(())
     }
 }
+
+// -----------------------------
 
 pub struct Grid<T> {
     grid: Vec<Vec<T>>,
@@ -266,5 +286,29 @@ where
         }
 
         return Some((pos, self.grid.get(pos.0, pos.1)));
+    }
+}
+
+// -----------------------------
+
+#[derive(Clone, Copy)]
+pub struct BinaryStreamIterator<'a> {
+    digits: &'a Vec<u8>,
+    pub index: usize,
+}
+
+impl<'a> BinaryStreamIterator<'a> {
+    pub fn new(digits: &'a Vec<u8>) -> BinaryStreamIterator<'a> {
+        BinaryStreamIterator { digits, index: 0 }
+    }
+
+    pub fn take(&mut self, num_digits: usize) -> &[u8] {
+        let old_index = self.index;
+        self.index += num_digits;
+        &self.digits[old_index..self.index]
+    }
+
+    pub fn next(&mut self) -> u8 {
+        self.take(1)[0]
     }
 }
