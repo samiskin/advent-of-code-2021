@@ -5,6 +5,94 @@ use std::fmt;
 use std::hash::Hash;
 use std::ops::Add;
 
+#[derive(Clone, Copy, Eq, PartialEq, PartialOrd, Hash, Debug)]
+pub struct Point3 {
+    pub x: i32,
+    pub y: i32,
+    pub z: i32,
+}
+
+impl Point3 {
+    pub fn to_arr(&self) -> [i32; 3] {
+        [self.x, self.y, self.z]
+    }
+
+    pub fn sub(&self, rhs: &Point3) -> Point3 {
+        Point3 {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+            z: self.z - rhs.z,
+        }
+    }
+
+    pub fn add(&self, rhs: &Point3) -> Point3 {
+        Point3 {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+            z: self.z + rhs.z,
+        }
+    }
+
+    pub fn manhattan(&self) -> i32 {
+       self.x.abs() + self.y.abs() + self.z.abs() 
+    }
+}
+
+pub fn transform_point(p: Point3, mat: [[i32; 3]; 3]) -> Point3 {
+    let coords = mat
+        .iter()
+        .map(|row| p.x * row[0] + p.y * row[1] + p.z * row[2])
+        .collect::<Vec<i32>>();
+
+    Point3 {
+        x: coords[0],
+        y: coords[1],
+        z: coords[2],
+    }
+}
+
+pub type Matrix = [[i32; 3]; 3];
+
+pub fn mat_transpose(mat: Matrix) -> Matrix {
+    [
+        [mat[0][0], mat[1][0], mat[2][0]],
+        [mat[0][1], mat[1][1], mat[2][1]],
+        [mat[0][2], mat[1][2], mat[2][2]],
+    ]
+}
+pub fn vec_dot(a: [i32; 3], b: [i32; 3]) -> i32 {
+    a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+}
+pub fn mat_mul(a: Matrix, b_orig: Matrix) -> Matrix {
+    let b = mat_transpose(b_orig);
+    [
+        [
+            vec_dot(a[0], b[0]),
+            vec_dot(a[0], b[1]),
+            vec_dot(a[0], b[2]),
+        ],
+        [
+            vec_dot(a[1], b[0]),
+            vec_dot(a[1], b[1]),
+            vec_dot(a[1], b[2]),
+        ],
+        [
+            vec_dot(a[2], b[0]),
+            vec_dot(a[2], b[1]),
+            vec_dot(a[2], b[2]),
+        ],
+    ]
+}
+
+pub fn mat_pow(a: Matrix, n: usize) -> Matrix {
+    (1..n).fold(a, |acc, _| mat_mul(a, acc))
+}
+
+pub static ID_MAT: Matrix = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+pub static ROT_90_X: Matrix = [[1, 0, 0], [0, 0, -1], [0, 1, 0]];
+pub static ROT_90_Y: Matrix = [[0, 0, 1], [0, 1, 0], [-1, 0, 0]];
+pub static ROT_90_Z: Matrix = [[0, -1, 0], [1, 0, 0], [0, 0, 1]];
+
 #[derive(Copy, Clone, Eq, PartialEq, Ord)]
 pub struct PqState<T>
 where
