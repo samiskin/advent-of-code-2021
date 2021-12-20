@@ -5,6 +5,14 @@ use std::fmt;
 use std::hash::Hash;
 use std::ops::Add;
 
+pub fn bit_vec_to_num<'a>(bitvec: &'a [u8]) -> u64 {
+    bitvec
+        .iter()
+        .rev()
+        .enumerate()
+        .fold(0, |acc, (i, n)| acc + ((*n as u64) << i))
+}
+
 #[derive(Clone, Copy, Eq, PartialEq, PartialOrd, Hash, Debug)]
 pub struct Point3 {
     pub x: i32,
@@ -34,7 +42,7 @@ impl Point3 {
     }
 
     pub fn manhattan(&self) -> i32 {
-       self.x.abs() + self.y.abs() + self.z.abs() 
+        self.x.abs() + self.y.abs() + self.z.abs()
     }
 }
 
@@ -212,22 +220,40 @@ impl<T> Grid<T>
 where
     T: Copy,
 {
-    pub fn from_points(points: Vec<((usize, usize), T)>, default: T) -> Grid<T> {
+    pub fn from_points(points: Vec<((i32, i32), T)>, default: T) -> Grid<T> {
         let mut max_x = 0;
         let mut max_y = 0;
+        let mut min_x = 0;
+        let mut min_y = 0;
         for (point, _) in points.iter() {
-            max_x = usize::max(max_x, point.0);
-            max_y = usize::max(max_y, point.1);
+            max_x = i32::max(max_x, point.0);
+            max_y = i32::max(max_y, point.1);
+            min_x = i32::min(min_x, point.0);
+            min_y = i32::min(min_y, point.1);
         }
 
         let mut grid = Grid {
-            grid: vec![vec![default; max_x + 1]; max_y + 1],
+            grid: vec![vec![default; (max_x - min_x) as usize + 1]; (max_y - min_y) as usize + 1],
         };
         for (point, val) in points.iter() {
-            grid.set(point.0, point.1, *val);
+            grid.set((point.0 - min_x) as usize, (point.1 - min_y) as usize, *val);
         }
 
         grid
+    }
+}
+
+impl<T> Grid<T>
+where
+    T: Default + Copy,
+{
+    pub fn rotated(&self) -> Grid<T> {
+        Grid::from_points(
+            self.iter()
+                .map(|((x, y), t)| ((y as i32, x as i32), *t))
+                .collect(),
+            T::default(),
+        )
     }
 }
 
