@@ -5,6 +5,12 @@ use std::fmt;
 use std::hash::Hash;
 use std::ops::Add;
 
+pub fn print_vec_multiline<T>(v: Vec<T>) where T: std::fmt::Debug {
+    for e in v {
+        println!("{:?}", e);
+    }
+}
+
 pub fn bit_vec_to_num<'a>(bitvec: &'a [u8]) -> u64 {
     bitvec
         .iter()
