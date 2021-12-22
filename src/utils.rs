@@ -5,7 +5,7 @@ use std::fmt;
 use std::hash::Hash;
 use std::ops::Add;
 
-pub fn print_vec_multiline<T>(v: Vec<T>) where T: std::fmt::Debug {
+pub fn print_vec_multiline<T>(v: &Vec<T>) where T: std::fmt::Debug {
     for e in v {
         println!("{:?}", e);
     }
