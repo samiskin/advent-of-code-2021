@@ -11,6 +11,14 @@ pub fn print_vec_multiline<T>(v: &Vec<T>) where T: std::fmt::Debug {
     }
 }
 
+pub fn vec_to_str_multiline<T>(v: &Vec<T>) -> String where T: std::fmt::Debug {
+    let mut out = "\n".to_owned();
+    for e in v {
+        out = format!("{}{:?}\n", out, e);
+    }
+    out
+}
+
 pub fn bit_vec_to_num<'a>(bitvec: &'a [u8]) -> u64 {
     bitvec
         .iter()
