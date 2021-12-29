@@ -5,6 +5,60 @@ use std::fmt;
 use std::hash::Hash;
 use std::ops::Add;
 
+
+pub struct NumIterator {
+    curr: u64,
+    step: i64,
+    end: u64,
+}
+
+impl Iterator for NumIterator {
+    type Item = u64;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let val = self.curr;
+        if (self.step > 0 && val > self.end) || (self.step < 0 && val < self.end) {
+            return None;
+        }
+        self.curr = (self.curr as i64 + self.step) as u64;
+        Some(val)
+    }
+}
+
+pub fn iter_nums(lower: u64, upper: u64) -> NumIterator {
+    if lower < upper {
+        NumIterator { curr: lower, step: 1, end: upper }
+    } else {
+        NumIterator { curr: lower, step: -1, end: upper }
+    }
+}
+
+pub fn digits(mut n: u64) -> Vec<u64> {
+    let mut result = vec!();
+    for digit in (0..20).rev() {
+        if !result.is_empty() || n / 10_u64.pow(digit) >= 1 || digit == 0 {
+            result.push(n / 10_u64.pow(digit));
+            n = n % 10_u64.pow(digit);
+        }
+    }
+    return result;
+}
+
+pub fn from_digits(digits: &Vec<u64>) -> u64 {
+    let mut num = 0;
+    for digit in digits {
+        num *= 10;
+        num += digit;
+    }
+    num
+}
+
+pub fn prepend_digit(leading_digit: u64, rest: u64) -> u64 {
+    let mut digits = digits(rest);
+    digits.insert(0, leading_digit);
+    from_digits(&digits)
+}
+
 pub fn print_vec_multiline<T>(v: &Vec<T>) where T: std::fmt::Debug {
     for e in v {
         println!("{:?}", e);
@@ -226,6 +280,7 @@ where
 
 // -----------------------------
 
+#[derive(Clone)]
 pub struct Grid<T> {
     grid: Vec<Vec<T>>,
 }
@@ -255,6 +310,9 @@ where
 
         grid
     }
+    pub fn set_all(&mut self, val: T) {
+        self.grid = vec![vec![val; self.width()]; self.height()];
+    }
 }
 
 impl<T> Grid<T>
@@ -278,6 +336,16 @@ impl<T> Grid<T> {
     }
     pub fn get(&self, x: usize, y: usize) -> &T {
         &self.grid[y][x]
+    }
+    pub fn get_opt(&self, x: isize, y: isize) -> Option<&T> {
+        if self.contains(x, y) {
+            Some(&self.grid[y as usize][x as usize])
+        } else {
+            None
+        }
+    }
+    pub fn contains(&self, x: isize, y: isize) -> bool {
+        x >= 0 && x < self.width() as isize && y >= 0 && y < self.height() as isize
     }
     pub fn set(&mut self, x: usize, y: usize, val: T) {
         self.grid[y][x] = val;
@@ -368,6 +436,21 @@ where
             }
         }
         Ok(())
+    }
+}
+
+impl<T> Eq for Grid<T> where T: PartialEq + fmt::Debug {}
+impl<T> PartialEq for Grid<T> where T: PartialEq + fmt::Debug {
+    fn eq(&self, other: &Self) -> bool {
+        if other.width() != self.width() || other.height() != self.height() {
+            return false;
+        }
+        for ((x, y), c) in self.iter() {
+            if *other.get(x, y) != *c {
+                return false;
+            }
+        }
+        return true;
     }
 }
 
